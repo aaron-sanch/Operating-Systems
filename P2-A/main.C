@@ -30,5 +30,8 @@ int main() {
     // Mac, Windows, and Linux environments)
     std::cout << frame_pool.get_frames(1) << std::endl;
     std::cout << frame_pool.get_frames(508) << std::endl;
-    std::cout << frame_pool.get_frames(4) << std::endl;
+    std::cout << frame_pool.get_frames(4) << std::endl; 
+    std::cout << frame_pool.get_frame_state(1024) << std::endl;
+    std::cout << frame_pool.get_frame_state(1025) << std::endl;
+    std::cout << frame_pool.get_frame_state(1026) << std::endl;
 }

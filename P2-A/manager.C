@@ -110,8 +110,19 @@ unsigned long Manager::get_frames(unsigned long _n_frames)
 
 bool Manager::release_frames(unsigned long _first_frame_no)
 {
-    // TODO: IMPLEMENTATION NEEDED!
-    assert(false);
+    area[_first_frame_no] = FREE;
+    _first_frame_no++;
+    while (area[_first_frame_no] == ALLOCATED || area[_first_frame_no] == INACCESSIBLE) {
+        if (area[_first_frame_no] == INACCESSIBLE) {
+            _first_frame_no++;
+            return false;
+        }
+        else {
+            area[_first_frame_no] = FREE;
+            _first_frame_no++;
+        }
+    }
+    return true;
 }
 
 void Manager::mark_inaccessible(unsigned long _starting_frame,
@@ -122,12 +133,11 @@ void Manager::mark_inaccessible(unsigned long _starting_frame,
     }
 }
 int Manager::NumberBitsRepresentingFrame() {
-    // TODO: IMPLEMENTATION NEEDED!
+    // Using bytes for the moment
     return 8; 
 }
 
-char Manager::get_frame_state(unsigned long _frame_nb) {
-    // TODO: if you want to use it in testing, you need to implement it
-    assert(false); 
-    return 255; // returning garbage state to compile cleanly
+char Manager::get_frame_state(unsigned long _frame_nb) { 
+    // Return array at frame
+    return area[_frame_nb]; 
 }
