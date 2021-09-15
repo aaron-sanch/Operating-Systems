@@ -60,8 +60,18 @@ Manager::Manager(unsigned long long _map_ptr,
                 unsigned long _base_frame)
 
 {
-    // TODO: IMPLEMENTATION NEEDED!
-    assert(false);
+    // Basic assigning of variables
+    // map_ptr might need to be changed back to a char * so that I can actually manipulate the values again
+    // also might need to make map_ptr into a shallow copy instead of a deep copy, so that we dont have 2 versions of 
+    // the array that could be different
+    area = (char*) &_map_ptr;
+    n_frames = _n_frames;
+    base_frame = _base_frame;
+
+    // Assign all of the values in map_ptr to free
+    for (unsigned long i; i < n_frames; i++) {
+        area[i] = FREE;
+    }
 }
 
 unsigned long Manager::get_frames(unsigned long _n_frames)
