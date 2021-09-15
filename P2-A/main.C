@@ -3,6 +3,7 @@
 */
 
 #include "manager.H"
+#include <iostream>
 
 
 int main() {
@@ -20,12 +21,14 @@ int main() {
                                  POOL_NB_FRAMES, BASE_FRAME);
 
     // create a hole starting at frames 1048 and ending at frame 1051
-    frame_pool.mark_inaccessible(1048, 4);
-
+    //frame_pool.mark_inaccessible(1048, 4);
+    
     // Test your implementation by invoking get_frames and release_frames
     // If you have the Google Test framework on your environment, you can
     // use the tests in gtest.C
     // (You can easily find guides to install the Google Test Framework on
     // Mac, Windows, and Linux environments)
 
+    std::cout << frame_pool.get_frames(4) << std::endl;
+    std::cout << frame_pool.get_frames(4) << std::endl;
 }

@@ -69,15 +69,26 @@ Manager::Manager(unsigned long long _map_ptr,
     base_frame = _base_frame;
 
     // Assign all of the values in map_ptr to free
-    for (unsigned long i; i < n_frames; i++) {
+    for (unsigned long i = base_frame; i < (base_frame + n_frames); i++) {
         area[i] = FREE;
     }
 }
 
 unsigned long Manager::get_frames(unsigned long _n_frames)
 {
-    // TODO: IMPLEMENTATION NEEDED!
-    assert(false);
+    unsigned long first_free_frame;
+    for(unsigned long i = base_frame; i < (base_frame + n_frames); i++) {
+        if (area[i] == FREE) {
+            first_free_frame = i;
+            break;
+        }
+    }
+    area[first_free_frame] = HEAD_OF_SEQUENCE;
+    for(unsigned long i = first_free_frame + 1; i < (first_free_frame + _n_frames); i++) {
+        area[i] = ALLOCATED;
+    }
+    // Not currently dealing with if there are no free frames
+    return first_free_frame;
 }
 
 bool Manager::release_frames(unsigned long _first_frame_no)
