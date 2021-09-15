@@ -84,7 +84,7 @@ void Manager::mark_inaccessible(unsigned long _starting_frame,
 }
 int Manager::NumberBitsRepresentingFrame() {
     // TODO: IMPLEMENTATION NEEDED!
-    assert(false);  
+    return 8; 
 }
 
 char Manager::get_frame_state(unsigned long _frame_nb) {

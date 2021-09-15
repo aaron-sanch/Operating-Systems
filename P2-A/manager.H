@@ -15,7 +15,10 @@ class Manager {
     
 private:
     // You can add whatever you need here
-
+    unsigned long long map_ptr;
+    unsigned long n_frames;
+    unsigned long base_frame;
+    
 public:
     // public so that tests can check using gtest.C. 
     // Students can use whatever values they want
