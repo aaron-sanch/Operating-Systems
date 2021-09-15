@@ -20,6 +20,11 @@ int main() {
     Manager frame_pool = Manager((unsigned long long) area,
                                  POOL_NB_FRAMES, BASE_FRAME);
 
+    // Make sure we can allocate and deallocate the entire frame space
+    std::cout << frame_pool.get_frames(512) << std::endl;
+    std::cout << frame_pool.release_frames(0) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(511) << std::endl;
+
     // create a hole starting at frames 1048 and ending at frame 1051
     frame_pool.mark_inaccessible(1048, 4);
     
@@ -28,14 +33,46 @@ int main() {
     // use the tests in gtest.C
     // (You can easily find guides to install the Google Test Framework on
     // Mac, Windows, and Linux environments)
-    std::cout << frame_pool.get_frames(1) << std::endl;
-    std::cout << frame_pool.get_frames(508) << std::endl;
-    std::cout << frame_pool.get_frames(4) << std::endl; 
+
+    // Test the allocation of all of our array
     std::cout << (unsigned long) frame_pool.get_frame_state(0) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(100) << std::endl;
+
+    // Test getting frames
+    // Can turn the mark inaccessible ln.24 on/off to try different configurations
+    // Simple test first frame with just a single frame
+    std::cout << frame_pool.get_frames(1) << std::endl;
+    // Test if we can put in frames with inaccessible turned off/on
+    // When turned off we get it to allocate, when on no allocation
+    std::cout << frame_pool.get_frames(508) << std::endl;
+    // Try and allocate, when inaccessible is turned off we should
+    // not be able to allocate as we are too large, when on we should
+    // be able to allocate
+    std::cout << frame_pool.get_frames(4) << std::endl; 
+    //Head
+    std::cout << (unsigned long) frame_pool.get_frame_state(0) << std::endl;
+    //Head
     std::cout << (unsigned long) frame_pool.get_frame_state(1) << std::endl;
+    //Allocated
     std::cout << (unsigned long) frame_pool.get_frame_state(2) << std::endl;
+    //Inaccessible
     std::cout << (unsigned long) frame_pool.get_frame_state(24) << std::endl;
+    //Free
     std::cout << (unsigned long) frame_pool.get_frame_state(90) << std::endl;
-    std::cout << frame_pool.release_frames(1024) << std::endl;
+
+
+    std::cout << frame_pool.release_frames(0) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(0) << std::endl;
+
+    std::cout << frame_pool.release_frames(1) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(1) << std::endl;
+
+
+    // Test a longer release next to the inaccessible
+    std::cout << frame_pool.get_frames(24) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(0) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(23) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(24) << std::endl;
+    std::cout << frame_pool.release_frames(0) << std::endl;
     std::cout << (unsigned long) frame_pool.get_frame_state(0) << std::endl;
 }

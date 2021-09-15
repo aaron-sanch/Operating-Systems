@@ -96,5 +96,7 @@ public:
     ** Starts at curr_pos and must have n_frames after 
     */
     bool frames_available(unsigned long curr_pos, unsigned long _n_frames);
+
+    bool check_inaccessible(unsigned long curr_pos);
 };
 #endif

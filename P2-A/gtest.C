@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     cout << "Tests for mark_inaccessible passed" << endl;
 
     /* testing get_frames
-     */
+    */
 
     // only one frame
     unsigned long frame1 = frame_pool.get_frames(1);

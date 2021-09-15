@@ -108,17 +108,29 @@ unsigned long Manager::get_frames(unsigned long _n_frames)
     return first_free_frame;
 }
 
+bool Manager::check_inaccessible(unsigned long curr_pos) {
+    for(unsigned long i = curr_pos; i < (base_frame + n_frames); i++) {
+        if (area[i] == ALLOCATED) {
+            return true;
+        }
+        else if (area[i] == FREE || area[i] == HEAD_OF_SEQUENCE) {
+            return false;
+        }
+    }
+    return false;
+}
+
 bool Manager::release_frames(unsigned long _first_frame_no)
 {
-    area[_first_frame_no] = FREE;
+    area[base_frame + _first_frame_no] = FREE;
     _first_frame_no++;
-    while (area[_first_frame_no] == ALLOCATED || area[_first_frame_no] == INACCESSIBLE) {
-        if (area[_first_frame_no] == INACCESSIBLE) {
-            _first_frame_no++;
+    while (area[base_frame + _first_frame_no] == ALLOCATED || area[base_frame + _first_frame_no] == INACCESSIBLE) {
+        // This means there was a bad alloc
+        if (area[base_frame + _first_frame_no] == INACCESSIBLE && check_inaccessible(base_frame + _first_frame_no + 1)) {
             return false;
         }
         else {
-            area[_first_frame_no] = FREE;
+            area[base_frame + _first_frame_no] = FREE;
             _first_frame_no++;
         }
     }
