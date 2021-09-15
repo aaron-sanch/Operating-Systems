@@ -88,5 +88,13 @@ public:
     ** frame that this pool is managing
     */
     char get_frame_state(unsigned long _frame_nb);  
+
+    /* Helper class that will find if there are enough frames
+    ** available after the current position, so that we can 
+    ** allocate memory using get_frames
+    **
+    ** Starts at curr_pos and must have n_frames after 
+    */
+    bool frames_available(unsigned long curr_pos, unsigned long _n_frames);
 };
 #endif

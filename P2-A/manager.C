@@ -74,20 +74,37 @@ Manager::Manager(unsigned long long _map_ptr,
     }
 }
 
+bool Manager::frames_available(unsigned long curr_pos, unsigned long _n_frames) {
+    if((curr_pos + _n_frames) > (n_frames + base_frame)) {
+        return false;
+    }
+    for (unsigned long i = curr_pos + 1; i < (curr_pos + _n_frames); i++){
+        if (area[i] != FREE) {
+            return false;
+        }
+    }
+    return true;
+}
+
 unsigned long Manager::get_frames(unsigned long _n_frames)
 {
     unsigned long first_free_frame;
     for(unsigned long i = base_frame; i < (base_frame + n_frames); i++) {
-        if (area[i] == FREE) {
+        // Makes sure there is enough space as well
+        if (area[i] == FREE && frames_available(i, _n_frames)) {
             first_free_frame = i;
             break;
+        }
+        // Deals with if no frames are available
+        if (i == (base_frame + n_frames - 1)) {
+            return 0;
         }
     }
     area[first_free_frame] = HEAD_OF_SEQUENCE;
     for(unsigned long i = first_free_frame + 1; i < (first_free_frame + _n_frames); i++) {
         area[i] = ALLOCATED;
     }
-    // Not currently dealing with if there are no free frames
+    
     return first_free_frame;
 }
 
@@ -100,8 +117,9 @@ bool Manager::release_frames(unsigned long _first_frame_no)
 void Manager::mark_inaccessible(unsigned long _starting_frame,
                                       unsigned long _n_frames)
 {
-    // TODO: IMPLEMENTATION NEEDED!
-    assert(false);
+    for(unsigned long i = _starting_frame; i < (_starting_frame + _n_frames); i++) {
+        area[i] = INACCESSIBLE;
+    }
 }
 int Manager::NumberBitsRepresentingFrame() {
     // TODO: IMPLEMENTATION NEEDED!
