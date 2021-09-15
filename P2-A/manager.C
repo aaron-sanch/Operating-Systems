@@ -139,5 +139,5 @@ int Manager::NumberBitsRepresentingFrame() {
 
 char Manager::get_frame_state(unsigned long _frame_nb) { 
     // Return array at frame
-    return area[_frame_nb]; 
+    return area[base_frame + _frame_nb]; 
 }

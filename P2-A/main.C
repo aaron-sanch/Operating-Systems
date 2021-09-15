@@ -31,7 +31,11 @@ int main() {
     std::cout << frame_pool.get_frames(1) << std::endl;
     std::cout << frame_pool.get_frames(508) << std::endl;
     std::cout << frame_pool.get_frames(4) << std::endl; 
-    std::cout << frame_pool.get_frame_state(1024) << std::endl;
-    std::cout << frame_pool.get_frame_state(1025) << std::endl;
-    std::cout << frame_pool.get_frame_state(1026) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(0) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(1) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(2) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(24) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(90) << std::endl;
+    std::cout << frame_pool.release_frames(1024) << std::endl;
+    std::cout << (unsigned long) frame_pool.get_frame_state(0) << std::endl;
 }
