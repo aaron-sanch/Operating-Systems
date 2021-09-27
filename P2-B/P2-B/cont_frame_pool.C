@@ -49,6 +49,10 @@
 #include "utils.H"
 #include "assert.H"
 
+unsigned long ContFramePool::get_start_frame() {
+    if (info_frame_no == 0) {return base_frame_no;}
+    return info_frame_no;
+}
 
 ContFramePool::ContFramePool(unsigned long _base_frame_no,
                              unsigned long _n_frames,
@@ -59,22 +63,26 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
                             info_frame_no(_info_frame_no),
                             n_info_frames(_n_info_frames)
 {
-    // Do I need to multiply this by the Frame size, so i am at the correct position in memory?
-    area = (char *)base_frame_no;
-
-    // Try and allocate at area to be free
-    for (unsigned long i = 0; i < _n_frames; i++) {
-        area[i] = FREE;
+    if (_info_frame_no == 0) {
+        area = (char *)(base_frame_no * FRAME_SIZE);
+        for (unsigned long i = 0; i < _n_frames; i++) {
+            area[i] = FREE;
+        }
+        for (unsigned long i = 0; i < needed_info_frames(_n_frames); i++) {
+            // Am I supposed to mark inaccessible?
+            area[i] = INACCESSIBLE;
+        }
     }
-    // Try and allocate the pool
-    for (unsigned long i = (_info_frame_no - _base_frame_no); i < _n_info_frames; i++) {
-        // Am I supposed to mark inaccessible?
-        area[i] = INACCESSIBLE;
+    else {
+        area = (char *)(_info_frame_no * FRAME_SIZE);
+        for (unsigned long i = 0; i < _n_frames; i++) {
+            area[i] = FREE;
+        }
     }
 }
 
 bool ContFramePool::frames_available(unsigned long curr_pos, unsigned long _n_frames) {
-    if((curr_pos + _n_frames) > (n_frames + base_frame_no)) {
+    if((curr_pos + _n_frames) > (n_frames)) {
         return false;
     }
     for (unsigned long i = curr_pos + 1; i < (curr_pos + _n_frames); i++){
@@ -88,14 +96,14 @@ bool ContFramePool::frames_available(unsigned long curr_pos, unsigned long _n_fr
 unsigned long ContFramePool::get_frames(unsigned long _n_frames)
 {
     unsigned long first_free_frame;
-    for(unsigned long i = base_frame_no; i < (base_frame_no + n_frames); i++) {
+    for(unsigned long i = 0; i < (n_frames); i++) {
         // Makes sure there is enough space as well
         if (area[i] == FREE && frames_available(i, _n_frames)) {
             first_free_frame = i;
             break;
         }
         // Deals with if no frames are available
-        if (i == (base_frame_no + n_frames - 1)) {
+        if (i == ( n_frames - 1)) {
             return 0;
         }
     }
@@ -117,7 +125,12 @@ void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
 
 void ContFramePool::release_frames(unsigned long _first_frame_no)
 {
-    
+    // create special static array
+
+    //if (_first_frame_no >= info_frame_no * FRAME_SIZE && _first_frame_no < (info_frame_no * FRAME_SIZE + n_info_frames)) {
+
+    //}
+
 }
 
 unsigned long ContFramePool::needed_info_frames(unsigned long _n_frames)

@@ -49,9 +49,12 @@ private:
     char* area;
 public:
     static const char FREE = 3, ALLOCATED = 1, HEAD_OF_SEQUENCE = 2, INACCESSIBLE = 0;
-    
+
     // The frame size is the same as the page size, duh...    
     static const unsigned int FRAME_SIZE = Machine::PAGE_SIZE; 
+
+    // This simply returns the start frame based off of the base frame no and info frame no
+    unsigned long get_start_frame();
 
     ContFramePool(unsigned long _base_frame_no,
                   unsigned long _n_frames,
