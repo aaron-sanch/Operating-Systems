@@ -42,9 +42,13 @@ class ContFramePool {
     
 private:
     /* -- DEFINE YOUR CONT FRAME POOL DATA STRUCTURE(s) HERE. */
-    
+    unsigned long base_frame_no;
+    unsigned long n_frames;
+    unsigned long info_frame_no;
+    unsigned long n_info_frames;
+    char* area;
 public:
-
+    static const char FREE = 3, ALLOCATED = 1, HEAD_OF_SEQUENCE = 2, INACCESSIBLE = 0;
     // The frame size is the same as the page size, duh...    
     static const unsigned int FRAME_SIZE = Machine::PAGE_SIZE; 
 
@@ -130,5 +134,15 @@ public:
      Other implementations need a different number of info frames.
      The exact number is computed in this function..
      */
+
+    /* Helper class that will find if there are enough frames
+    ** available after the current position, so that we can 
+    ** allocate memory using get_frames
+    **
+    ** Starts at curr_pos and must have n_frames after 
+    */
+    bool frames_available(unsigned long curr_pos, unsigned long _n_frames);
+
+    bool check_inaccessible(unsigned long curr_pos);
 };
 #endif
