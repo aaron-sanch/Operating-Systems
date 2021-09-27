@@ -49,6 +49,7 @@ private:
     char* area;
 public:
     static const char FREE = 3, ALLOCATED = 1, HEAD_OF_SEQUENCE = 2, INACCESSIBLE = 0;
+    
     // The frame size is the same as the page size, duh...    
     static const unsigned int FRAME_SIZE = Machine::PAGE_SIZE; 
 

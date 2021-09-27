@@ -59,7 +59,11 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
                             info_frame_no(_info_frame_no),
                             n_info_frames(_n_info_frames)
 {
-    
+    // Do I need to multiply this by the Frame size, so i am at the correct position in memory?
+    area = (char *)base_frame_no;
+
+    // Try and allocate at area[0]
+    area[0] = FREE;
 }
 
 bool ContFramePool::frames_available(unsigned long curr_pos, unsigned long _n_frames) {
@@ -99,14 +103,12 @@ unsigned long ContFramePool::get_frames(unsigned long _n_frames)
 void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
                                       unsigned long _n_frames)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    assert(false);
+   
 }
 
 void ContFramePool::release_frames(unsigned long _first_frame_no)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    assert(false);
+    
 }
 
 unsigned long ContFramePool::needed_info_frames(unsigned long _n_frames)
