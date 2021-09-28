@@ -49,9 +49,15 @@
 #include "utils.H"
 #include "assert.H"
 
+ContFramePool* ContFramePool::frames[69];
+unsigned long ContFramePool::index = 0;
+
 unsigned long ContFramePool::get_start_frame() {
     if (info_frame_no == 0) {return base_frame_no;}
     return info_frame_no;
+}
+unsigned long ContFramePool::get_length() {
+    return n_frames;
 }
 
 ContFramePool::ContFramePool(unsigned long _base_frame_no,
@@ -64,21 +70,27 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
                             n_info_frames(_n_info_frames)
 {
     if (_info_frame_no == 0) {
+        // info frame 0 case
         area = (char *)(base_frame_no * FRAME_SIZE);
         for (unsigned long i = 0; i < _n_frames; i++) {
             area[i] = FREE;
         }
-        for (unsigned long i = 0; i < needed_info_frames(_n_frames); i++) {
-            // Am I supposed to mark inaccessible?
+        for (unsigned long i = 0; i < needed_info_frames(_n_info_frames); i++) {
+            // create info frame pool area
             area[i] = INACCESSIBLE;
         }
     }
     else {
         area = (char *)(_info_frame_no * FRAME_SIZE);
+        // otherwise just create the regular frame pool
         for (unsigned long i = 0; i < _n_frames; i++) {
             area[i] = FREE;
         }
     }
+    
+    // add the frame pool to our static array that holds all of the arrays
+    frames[index] = this;
+    index++;
 }
 
 bool ContFramePool::frames_available(unsigned long curr_pos, unsigned long _n_frames) {
@@ -123,14 +135,49 @@ void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
     }
 }
 
+bool ContFramePool::check_inaccessible(unsigned long curr_pos) {
+    for(unsigned long i = curr_pos; i < (n_frames); i++) {
+        if (area[i] == ALLOCATED) {
+            return true;
+        }
+        else if (area[i] == FREE || area[i] == HEAD_OF_SEQUENCE) {
+            return false;
+        }
+    }
+    return false;
+}
+
+void ContFramePool::release_helper(unsigned long _first_frame_no)
+{
+    area[_first_frame_no] = FREE;
+    _first_frame_no++;
+    while (area[_first_frame_no] == ALLOCATED || area[ _first_frame_no] == INACCESSIBLE) {
+        // This means there was a bad alloc
+        if (area[_first_frame_no] == INACCESSIBLE && check_inaccessible(_first_frame_no + 1)) {
+            return;
+        }
+        else {
+            area[ _first_frame_no] = FREE;
+            _first_frame_no++;
+        }
+    }
+    return;
+}
+
 void ContFramePool::release_frames(unsigned long _first_frame_no)
 {
-    // create special static array
+    for (int i = 0; i < 69; i++) {
+        // Check we are within the range of the frame pool that is at index i
+        if (_first_frame_no >= frames[i]->get_start_frame() && _first_frame_no < (frames[i]->get_start_frame() + frames[i]->get_length())) {
+            // call release helper for the frame pool we are on, but we want the index of the frame, not the overall 
+            // frame value, that would cause an out of bounds error for release_helper as it accesses the area[_first_frame_no],
+            // so we will subtract from the start frame, so we get the index
+            frames[i]->release_helper(_first_frame_no - frames[i]->get_start_frame());
 
-    //if (_first_frame_no >= info_frame_no * FRAME_SIZE && _first_frame_no < (info_frame_no * FRAME_SIZE + n_info_frames)) {
-
-    //}
-
+            // return, theres not gonna be more than one pool at this location
+            return;
+        }
+    }
 }
 
 unsigned long ContFramePool::needed_info_frames(unsigned long _n_frames)

@@ -47,7 +47,10 @@ private:
     unsigned long info_frame_no;
     unsigned long n_info_frames;
     char* area;
+    // create the static array that manages all the area arrays
 public:
+    static unsigned long index;
+    static ContFramePool* frames[69];
     static const char FREE = 3, ALLOCATED = 1, HEAD_OF_SEQUENCE = 2, INACCESSIBLE = 0;
 
     // The frame size is the same as the page size, duh...    
@@ -55,6 +58,7 @@ public:
 
     // This simply returns the start frame based off of the base frame no and info frame no
     unsigned long get_start_frame();
+    unsigned long get_length();
 
     ContFramePool(unsigned long _base_frame_no,
                   unsigned long _n_frames,
@@ -123,6 +127,9 @@ public:
      This function must first identify the correct frame pool and then call the frame
      pool's release_frame function.
      */
+
+    bool check_inaccessible(unsigned long curr_pos);
+    void release_helper(unsigned long _first_frame_no);
     
     static unsigned long needed_info_frames(unsigned long _n_frames);
     /*
@@ -146,7 +153,5 @@ public:
     ** Starts at curr_pos and must have n_frames after 
     */
     bool frames_available(unsigned long curr_pos, unsigned long _n_frames);
-
-    bool check_inaccessible(unsigned long curr_pos);
 };
 #endif
