@@ -42,11 +42,23 @@ class ContFramePool {
     
 private:
     /* -- DEFINE YOUR CONT FRAME POOL DATA STRUCTURE(s) HERE. */
-    
+    unsigned long base_frame_no;
+    unsigned long n_frames;
+    unsigned long info_frame_no;
+    unsigned long n_info_frames;
+    char* area;
+    // create the static array that manages all the area arrays
 public:
+    static unsigned long index;
+    static ContFramePool* frames[69];
+    static const char FREE = 3, ALLOCATED = 1, HEAD_OF_SEQUENCE = 2, INACCESSIBLE = 0;
 
     // The frame size is the same as the page size, duh...    
     static const unsigned int FRAME_SIZE = Machine::PAGE_SIZE; 
+
+    // This simply returns the start frame based off of the base frame no and info frame no
+    unsigned long get_start_frame();
+    unsigned long get_length();
 
     ContFramePool(unsigned long _base_frame_no,
                   unsigned long _n_frames,
@@ -57,7 +69,7 @@ public:
      frame pool.
      _base_frame_no: Number of first frame managed by this frame pool.
      _n_frames: Size, in frames, of this frame pool.
-     EXAMPLE: If _base_frame_no is 16 and _nframes is 4, this frame pool manages
+     EXAMPLE: If _base_frame_no is 16 and _n_frames is 4, this frame pool manages
      physical frames numbered 16, 17, 18 and 19.
      _info_frame_no: Number of the first frame that should be used to store the
      management information for the frame pool.
@@ -71,10 +83,13 @@ public:
      for the frame pool.
      NOTE: This function must be called before the paging system
      is initialized.
+
      */
     
-    unsigned long get_frames(unsigned int _n_frames);
+    unsigned long get_frames(unsigned long _n_frames);
     /*
+    Notice that your P2-A Manager class has the functionality you need.
+
      Allocates a number of contiguous frames from the frame pool.
      _n_frames: Size of contiguous physical memory to allocate,
      in number of frames.
@@ -85,6 +100,8 @@ public:
     void mark_inaccessible(unsigned long _base_frame_no,
                            unsigned long _n_frames);
     /*
+    Notice that your P2-A Manager class has the functionality you need.
+
      Marks a contiguous area of physical memory, i.e., a contiguous
      sequence of frames, as inaccessible.
      _base_frame_no: Number of first frame to mark as inaccessible.
@@ -93,6 +110,15 @@ public:
     
     static void release_frames(unsigned long _first_frame_no);
     /*
+    Notice that, unlike in your P2-A Manager class, this function is static.
+    This is how releasing memory usually works: we state what we are releasing,
+    without details from where we got the memory.
+    You need to keep track of all frame pools instances created and identify
+    with object has the frame being released. Then you can invoke a non-static
+    version of release (for which your P2-A Manager class has the required
+    functionality
+
+
      Releases a previously allocated contiguous sequence of frames
      back to its frame pool.
      The frame sequence is identified by the number of the first frame.
@@ -101,12 +127,16 @@ public:
      This function must first identify the correct frame pool and then call the frame
      pool's release_frame function.
      */
+
+    bool check_inaccessible(unsigned long curr_pos);
+    void release_helper(unsigned long _first_frame_no);
     
     static unsigned long needed_info_frames(unsigned long _n_frames);
     /*
      Returns the number of frames needed to manage a frame pool of size _n_frames.
-     The number returned here depends on the implementation of the frame pool and 
-     on the frame size.
+     The number returned here depends on the implementation of the frame pool (how
+     many bits are being used to represent the state of one frame) and the  
+     the frame size (how many bytes it has)
      EXAMPLE: For FRAME_SIZE = 4096 and a bitmap with a single bit per frame 
      (not appropriate for contiguous allocation) one would need one frame to manage a 
      frame pool with up to 8 * 4096 = 32k frames = 128MB of memory!
@@ -115,5 +145,13 @@ public:
      Other implementations need a different number of info frames.
      The exact number is computed in this function..
      */
+
+    /* Helper class that will find if there are enough frames
+    ** available after the current position, so that we can 
+    ** allocate memory using get_frames
+    **
+    ** Starts at curr_pos and must have n_frames after 
+    */
+    bool frames_available(unsigned long curr_pos, unsigned long _n_frames);
 };
 #endif

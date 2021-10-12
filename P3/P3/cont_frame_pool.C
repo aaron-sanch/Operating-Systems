@@ -6,76 +6,19 @@
  
  */
 
-/*--------------------------------------------------------------------------*/
-/* 
- POSSIBLE IMPLEMENTATION
- -----------------------
+/*
 
- The class SimpleFramePool in file "simple_frame_pool.H/C" describes an
- incomplete vanilla implementation of a frame pool that allocates 
- *single* frames at a time. Because it does allocate one frame at a time, 
- it does not guarantee that a sequence of frames is allocated contiguously.
- This can cause problems.
- 
- The class ContFramePool has the ability to allocate either single frames,
- or sequences of contiguous frames. This affects how we manage the
- free frames. In SimpleFramePool it is sufficient to maintain the free 
- frames.
- In ContFramePool we need to maintain free *sequences* of frames.
- 
- This can be done in many ways, ranging from extensions to bitmaps to 
- free-lists of frames etc.
- 
- IMPLEMENTATION:
- 
- One simple way to manage sequences of free frames is to add a minor
- extension to the bitmap idea of SimpleFramePool: Instead of maintaining
- whether a frame is FREE or ALLOCATED, which requires one bit per frame, 
- we maintain whether the frame is FREE, or ALLOCATED, or HEAD-OF-SEQUENCE.
- The meaning of FREE is the same as in SimpleFramePool. 
- If a frame is marked as HEAD-OF-SEQUENCE, this means that it is allocated
- and that it is the first such frame in a sequence of frames. Allocated
- frames that are not first in a sequence are marked as ALLOCATED.
- 
- NOTE: If we use this scheme to allocate only single frames, then all 
- frames are marked as either FREE or HEAD-OF-SEQUENCE.
- 
- NOTE: In SimpleFramePool we needed only one bit to store the state of 
- each frame. Now we need two bits. In a first implementation you can choose
- to use one char per frame. This will allow you to check for a given status
- without having to do bit manipulations. Once you get this to work, 
- revisit the implementation and change it to using two bits. You will get 
- an efficiency penalty if you use one char (i.e., 8 bits) per frame when
- two bits do the trick.
- 
- DETAILED IMPLEMENTATION:
- 
- How can we use the HEAD-OF-SEQUENCE state to implement a contiguous
- allocator? Let's look a the individual functions:
- 
- Constructor: Initialize all frames to FREE, except for any frames that you 
- need for the management of the frame pool, if any.
- 
- get_frames(_n_frames): Traverse the "bitmap" of states and look for a 
- sequence of at least _n_frames entries that are FREE. If you find one, 
- mark the first one as HEAD-OF-SEQUENCE and the remaining _n_frames-1 as
- ALLOCATED.
+ Notice that the differences between the class ContFramePool and your P2-A
+ Manager are few:
 
- release_frames(_first_frame_no): Check whether the first frame is marked as
- HEAD-OF-SEQUENCE. If not, something went wrong. If it is, mark it as FREE.
- Traverse the subsequent frames until you reach one that is FREE or 
- HEAD-OF-SEQUENCE. Until then, mark the frames that you traverse as FREE.
- 
- mark_inaccessible(_base_frame_no, _n_frames): This is no different than
- get_frames, without having to search for the free sequence. You tell the
- allocator exactly which frame to mark as HEAD-OF-SEQUENCE and how many
- frames after that to mark as ALLOCATED.
- 
- needed_info_frames(_n_frames): This depends on how many bits you need 
- to store the state of each frame. If you use a char to represent the state
- of a frame, then you need one info frame for each FRAME_SIZE frames.
- 
- A WORD ABOUT RELEASE_FRAMES():
+ (1) The constructor is different. For the Manager class, the constructor was
+     given a memory to store the array representing the state of the frames
+     being managed.
+     In ContFramePool, the constructor receives only information about which
+     frames are being managed, and if additional frames are being given to store
+     the array representing state.
+
+ (2) The release_frames is now static
  
  When we releae a frame, we only know its frame number. At the time
  of a frame's release, we don't know necessarily which pool it came
@@ -86,7 +29,8 @@
  C++. For a discussion of this see Stroustrup's FAQ:
  http://www.stroustrup.com/bs_faq2.html#placement-delete
  
- */
+*/
+
 /*--------------------------------------------------------------------------*/
 
 
@@ -105,58 +49,138 @@
 #include "utils.H"
 #include "assert.H"
 
-/*--------------------------------------------------------------------------*/
-/* DATA STRUCTURES */
-/*--------------------------------------------------------------------------*/
+ContFramePool* ContFramePool::frames[69];
+unsigned long ContFramePool::index = 0;
 
-/* -- (none) -- */
-
-/*--------------------------------------------------------------------------*/
-/* CONSTANTS */
-/*--------------------------------------------------------------------------*/
-
-/* -- (none) -- */
-
-/*--------------------------------------------------------------------------*/
-/* FORWARDS */
-/*--------------------------------------------------------------------------*/
-
-/* -- (none) -- */
-
-/*--------------------------------------------------------------------------*/
-/* METHODS FOR CLASS   C o n t F r a m e P o o l */
-/*--------------------------------------------------------------------------*/
-
-ContFramePool::ContFramePool(unsigned long _base_frame_no,
-                             unsigned long _nframes,
-                             unsigned long _info_frame_no,
-                             unsigned long _n_info_frames)
-{
-    // TODO: IMPLEMENTATION NEEEDED!
-    assert(false);
+unsigned long ContFramePool::get_start_frame() {
+    if (info_frame_no == 0) {return base_frame_no;}
+    return info_frame_no;
+}
+unsigned long ContFramePool::get_length() {
+    return n_frames;
 }
 
-unsigned long ContFramePool::get_frames(unsigned int _n_frames)
+ContFramePool::ContFramePool(unsigned long _base_frame_no,
+                             unsigned long _n_frames,
+                             unsigned long _info_frame_no,
+                             unsigned long _n_info_frames) :
+                            base_frame_no(_base_frame_no),
+                            n_frames(_n_frames),
+                            info_frame_no(_info_frame_no),
+                            n_info_frames(_n_info_frames)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    assert(false);
+    if (_info_frame_no == 0) {
+        // info frame 0 case
+        area = (char *)(base_frame_no * FRAME_SIZE);
+        for (unsigned long i = 0; i < _n_frames; i++) {
+            area[i] = FREE;
+        }
+        for (unsigned long i = 0; i < needed_info_frames(_n_info_frames); i++) {
+            // create info frame pool area
+            area[i] = INACCESSIBLE;
+        }
+    }
+    else {
+        area = (char *)(_info_frame_no * FRAME_SIZE);
+        // otherwise just create the regular frame pool
+        for (unsigned long i = 0; i < _n_frames; i++) {
+            area[i] = FREE;
+        }
+    }
+    
+    // add the frame pool to our static array that holds all of the arrays
+    frames[index] = this;
+    index++;
+}
+
+bool ContFramePool::frames_available(unsigned long curr_pos, unsigned long _n_frames) {
+    if((curr_pos + _n_frames) > (n_frames)) {
+        return false;
+    }
+    for (unsigned long i = curr_pos + 1; i < (curr_pos + _n_frames); i++){
+        if (area[i] != FREE) {
+            return false;
+        }
+    }
+    return true;
+}
+
+unsigned long ContFramePool::get_frames(unsigned long _n_frames)
+{
+    unsigned long first_free_frame;
+    for(unsigned long i = 0; i < (n_frames); i++) {
+        // Makes sure there is enough space as well
+        if (area[i] == FREE && frames_available(i, _n_frames)) {
+            first_free_frame = i;
+            break;
+        }
+        // Deals with if no frames are available
+        if (i == ( n_frames - 1)) {
+            return 0;
+        }
+    }
+    area[first_free_frame] = HEAD_OF_SEQUENCE;
+    for(unsigned long i = first_free_frame + 1; i < (first_free_frame + _n_frames); i++) {
+        area[i] = ALLOCATED;
+    }
+    
+    return first_free_frame;
 }
 
 void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
                                       unsigned long _n_frames)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    assert(false);
+   for(unsigned long i = _base_frame_no; i < (_base_frame_no + _n_frames); i++) {
+        area[i] = INACCESSIBLE;
+    }
+}
+
+bool ContFramePool::check_inaccessible(unsigned long curr_pos) {
+    for(unsigned long i = curr_pos; i < (n_frames); i++) {
+        if (area[i] == ALLOCATED) {
+            return true;
+        }
+        else if (area[i] == FREE || area[i] == HEAD_OF_SEQUENCE) {
+            return false;
+        }
+    }
+    return false;
+}
+
+void ContFramePool::release_helper(unsigned long _first_frame_no)
+{
+    area[_first_frame_no] = FREE;
+    _first_frame_no++;
+    while (area[_first_frame_no] == ALLOCATED || area[ _first_frame_no] == INACCESSIBLE) {
+        // This means there was a bad alloc
+        if (area[_first_frame_no] == INACCESSIBLE && check_inaccessible(_first_frame_no + 1)) {
+            return;
+        }
+        else {
+            area[ _first_frame_no] = FREE;
+            _first_frame_no++;
+        }
+    }
+    return;
 }
 
 void ContFramePool::release_frames(unsigned long _first_frame_no)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    assert(false);
+    for (int i = 0; i < 69; i++) {
+        // Check we are within the range of the frame pool that is at index i
+        if (_first_frame_no >= frames[i]->get_start_frame() && _first_frame_no < (frames[i]->get_start_frame() + frames[i]->get_length())) {
+            // call release helper for the frame pool we are on, but we want the index of the frame, not the overall 
+            // frame value, that would cause an out of bounds error for release_helper as it accesses the area[_first_frame_no],
+            // so we will subtract from the start frame, so we get the index
+            frames[i]->release_helper(_first_frame_no - frames[i]->get_start_frame());
+
+            // return, theres not gonna be more than one pool at this location
+            return;
+        }
+    }
 }
 
 unsigned long ContFramePool::needed_info_frames(unsigned long _n_frames)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    assert(false);
+    return (_n_frames / FRAME_SIZE + (_n_frames % FRAME_SIZE > 0 ? 1 : 0));
 }
