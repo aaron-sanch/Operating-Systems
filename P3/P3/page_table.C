@@ -61,7 +61,7 @@ PageTable::PageTable()
 
 void PageTable::load()
 {
-   write_cr3(*page_directory);
+   write_cr3((unsigned long) page_directory);
 
    current_page_table = this;
    Console::puts("Loaded page table\n");
@@ -71,7 +71,7 @@ void PageTable::enable_paging()
 {
    //set static enabled
    paging_enabled = true;
-   write_cr0(*page_directory | 0x80000000);
+   write_cr0(read_cr0() | 0x80000000);
    Console::puts("Enabled paging\n");
 }
 
