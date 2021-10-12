@@ -16,13 +16,25 @@ void PageTable::init_paging(ContFramePool * _kernel_mem_pool,
                             ContFramePool * _process_mem_pool,
                             const unsigned long _shared_size)
 {
-   assert(false);
+   shared_size = _shared_size;
+   kernel_mem_pool = _kernel_mem_pool;
+   process_mem_pool = _process_mem_pool;
+
    Console::puts("Initialized Paging System\n");
 }
 
 PageTable::PageTable()
 {
    assert(false);
+
+   // maybe something before these things? idk it says create the first page table before
+   // paging has been enabled
+
+   // we want to create the array here, which i think is page directory
+
+   // we want to then initialize the first 4MB as valid
+
+   // we then want to manage the remaining ages explicitly
    Console::puts("Constructed Page Table object\n");
 }
 
