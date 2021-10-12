@@ -30,10 +30,31 @@ PageTable::PageTable()
    // maybe something before these things? idk it says create the first page table before
    // paging has been enabled
 
-   // we want to create the array here, which i think is page directory
+   // get frames gives us the next free frame, so we are not getting the same address
+   // personal note, as I keep forgetting and rewriting this
+   // apparently there is a bug here
+   page_directory = (unsigned long *) (PAGE_SIZE * kernel_mem_pool->get_frames(1));
+   page_table = (unsigned long *) (PAGE_SIZE * kernel_mem_pool->get_frames(1)); 
 
+   // we want to create the array here, which i think is page directory
+   unsigned long address=0; // holds the physical address of where a page is
+   unsigned int i;
+   // map the first 4MB of memory
+   for(i=0; i< ENTRIES_PER_PAGE; i++)
+   {
+      page_table[i] = address | 3; // attribute set to: supervisor level, read/write, present(011 in binary)
+      address = address + PAGE_SIZE; // 4096 = 4kb
+   }
+
+   // fill the first entry of the page directory
+   page_directory[0] = (unsigned long) page_table; // attribute set to: supervisor level, read/write, present(011 in binary)
+   page_directory[0] = page_directory[0] | 3;
    // we want to then initialize the first 4MB as valid
 
+   for(i=1; i< ENTRIES_PER_PAGE; i++)
+   {
+      page_directory[i] = 0 | 2; // attribute set to: supervisor level, read/write, not present(010 in binary)
+   }
    // we then want to manage the remaining ages explicitly
    Console::puts("Constructed Page Table object\n");
 }
