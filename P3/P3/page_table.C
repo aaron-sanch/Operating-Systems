@@ -85,12 +85,20 @@ void PageTable::handle_fault(REGS * _r)
   // want to use but dont have
   unsigned long * page_directory = current_page_table->page_directory;
 
+  // want first 10 bit
   unsigned long idx = addr >> 22;
-  unsigned long ipt_idx;
+  // want second 10 bits
+  unsigned long ipt_idx (addr >> 12) & 0x3FF;
 
    // if last bit = 0, no inner page table
    if ( (page_directory[idx] & 1) == 0) {
       // no inner page table
+      unsigned long* inner_page_table = (unsigned long *) (PAGE_SIZE * kernel_mem_pool->get_frames(1)); 
+      for (unsigned int i = 0; i < ENTRIES_PER_PAGE; i++ {
+         // set inner page table entries = u/s = 1 and read write bit = 1, 
+         // with valid/invalid bit = 0, as we have not yet moved into our physical mem
+         inner_page_table[i] = 6;
+      }
    }
    else {
       // inner page table
