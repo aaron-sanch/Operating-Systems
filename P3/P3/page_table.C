@@ -88,22 +88,33 @@ void PageTable::handle_fault(REGS * _r)
   // want first 10 bit
   unsigned long idx = addr >> 22;
   // want second 10 bits
-  unsigned long ipt_idx (addr >> 12) & 0x3FF;
+  unsigned long ipt_idx = (addr >> 12) & 0x3FF;
 
-   // if last bit = 0, no inner page table
-   if ( (page_directory[idx] & 1) == 0) {
-      // no inner page table
-      unsigned long* inner_page_table = (unsigned long *) (PAGE_SIZE * kernel_mem_pool->get_frames(1)); 
-      for (unsigned int i = 0; i < ENTRIES_PER_PAGE; i++ {
-         // set inner page table entries = u/s = 1 and read write bit = 1, 
-         // with valid/invalid bit = 0, as we have not yet moved into our physical mem
-         inner_page_table[i] = 6;
+   // run if err_code last bit is not true
+   if ((_r->err_code & 1) == 0) {
+      // if last bit = 0, no inner page table
+      if ( (page_directory[idx] & 1) == 0) {
+         // no inner page table
+         // create inner page table without last 12 bits
+         unsigned long* inner_page_table = (unsigned long *) ((PAGE_SIZE * kernel_mem_pool->get_frames(1)) & 0xfffff000); 
+         // set page_directory at index = to the inner page table
+         page_directory[idx] = (unsigned long) inner_page_table;
+         for (unsigned int i = 0; i < ENTRIES_PER_PAGE; i++) {
+            // set inner page table entries = u/s = 1 and read write bit = 1, 
+            // with valid/invalid bit = 0, as we have not yet moved into our physical mem
+            inner_page_table[i] = 6;   // can i not use 7 here
+         }
+         // set inner page table at the inner page table index = address of the process memory pool frame or'd with 3
+         inner_page_table[ipt_idx] = (PAGE_SIZE * ((unsigned long) process_mem_pool->get_frames(1))) | 3;
       }
-   }
-   else {
-      // inner page table
-      unsigned long* inner_page_table = page_directory[idx];
-
+      else {
+         // create inner page table without last 12 bits
+         unsigned long* inner_page_table = (unsigned long*) (page_directory[idx] & 0xfffff000);
+         // set page_directory at index = to the inner page table
+         page_directory[idx] = (unsigned long) inner_page_table;
+         // set inner page table at the inner page table index = address of the process memory pool frame or'd with 3
+         inner_page_table[ipt_idx] = (PAGE_SIZE * ((unsigned long) process_mem_pool->get_frames(1))) | 3;
+      }
    }
   Console::puts("handled page fault\n");
 }
