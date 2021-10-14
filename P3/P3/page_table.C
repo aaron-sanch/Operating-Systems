@@ -102,7 +102,7 @@ void PageTable::handle_fault(REGS * _r)
          for (unsigned int i = 0; i < ENTRIES_PER_PAGE; i++) {
             // set inner page table entries = u/s = 1 and read write bit = 1, 
             // with valid/invalid bit = 0, as we have not yet moved into our physical mem
-            inner_page_table[i] = 6;   // can i not use 7 here
+            inner_page_table[i] = 2;   // can i not use 7 here
          }
          // set inner page table at the inner page table index = address of the process memory pool frame or'd with 3
          inner_page_table[ipt_idx] = (PAGE_SIZE * ((unsigned long) process_mem_pool->get_frames(1))) | 3;
