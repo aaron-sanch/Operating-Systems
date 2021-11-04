@@ -74,10 +74,13 @@ VMPool::VMPool(unsigned long  _base_address,
 
 unsigned long VMPool::allocate(unsigned long _size) {
     if (size == 0) {
+        // size of vmpool is 0 we cant allocate
         return 0;
     }
-    // want to loop through array and see if there is a memory hole large enough
 
+
+    // want to loop through array and see if there is a memory hole large enough
+    
 }
 
 void VMPool::release(unsigned long _start_address) {
@@ -90,14 +93,18 @@ void VMPool::release(unsigned long _start_address) {
     // The page_table object file that we provide (named page_table_provided.o)
     // contains this method.
 
-        // replace the assertion with your code
-    assert(false);
-    Console::puts("Released region of memory.\n");
+    for (int i = 0; i < (size / PageTable::PAGE_SIZE); i++) {
+        if (_start_address == regions[i].start_address) {
+            page_table->free_page(_start_address);
+            regions[i].start_address = 0;
+            regions[i].size = 0;
+            break;
+        }
+    }
 }
 
 bool VMPool::is_legitimate(unsigned long _address) {
-    // replace the assertion with your code
-    assert(false);
-    return true;
+    // check valid range    
+    return ((_address < base_address + size) && (_address >= base_address));
 }
 
