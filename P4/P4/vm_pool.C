@@ -56,14 +56,28 @@ VMPool::VMPool(unsigned long  _base_address,
     // The page_table object file that we provide (named page_table_provided.o)
     // contains this method.
 
-    assert(false);
-    Console::puts("Constructed VMPool object.\n");
+    base_address = _base_address;
+    size = _size;
+    frame_pool = _frame_pool;
+    page_table = _page_table;
+
+    // create array at base address
+    regions = (Region*) base_address;
+
+    //initialize array
+    for (int i = 0; i < (size / PageTable::PAGE_SIZE); i++) {
+        Region region;
+        region.start_address = 0;
+        region.size = 0;
+    }
 }
 
 unsigned long VMPool::allocate(unsigned long _size) {
-    // replace the assertion with your code
-    assert(false);
-    Console::puts("Allocated region of memory.\n");
+    if (size == 0) {
+        return 0;
+    }
+    // want to loop through array and see if there is a memory hole large enough
+
 }
 
 void VMPool::release(unsigned long _start_address) {
