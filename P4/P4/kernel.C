@@ -283,6 +283,7 @@ int main() {
     const unsigned long base = 800 MB;
     unsigned long space_available = 64 KB;
     VMPool v(base, 64 KB, &process_mem_pool, &pt1);
+    Console::puts("Allocating address 1: \n");
     unsigned long addr1 = v.allocate(32 KB);
     space_available -= 32 KB;
     unsigned long space_used_by_region_list = addr1 - base;
@@ -294,8 +295,10 @@ int main() {
         output_console_file("GRADING space_available is too small - It did not go beyond initial tests.\n");
         output_console_file("GRADING - Grade is 35 out of 50\n");
     } else {
+        Console::puts("Allocating address 2: \n");
         unsigned long addr2 = v.allocate(12 KB);
         space_available -= 12 KB;
+        Console::puts("Allocating address 3: \n");
         unsigned long addr3 = v.allocate(space_available);
         if (addr2 == 0 || addr3 == 0) {
             output_console_file("GRADING allocation failed - It did not go beyond initial tests.\n");
@@ -307,6 +310,7 @@ int main() {
             ** by releases) are likely to fail.
             */
             v.release(addr2);
+            Console::puts("Allocating address 4: \n");
             unsigned long addr4 = v.allocate(10 KB);
             if ( (addr4 >= (addr1 + 32 KB) )
                       && addr4 < addr3) {

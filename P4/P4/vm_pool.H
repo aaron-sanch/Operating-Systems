@@ -81,6 +81,7 @@ public:
 
    int find_next_hole(int curr);
    bool check_base_addr();
+   unsigned long find_last_val();
  };
 
 #endif
