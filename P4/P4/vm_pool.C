@@ -80,7 +80,7 @@ VMPool::VMPool(unsigned long  _base_address,
 }
 
 unsigned long VMPool::allocate(unsigned long _size) {
-    if (size == 0 || curr_size == regions_array_size) {
+    if (size == 0) {
         // size of vmpool is 0 we cant allocate
         return 0;
     }
@@ -101,8 +101,10 @@ unsigned long VMPool::allocate(unsigned long _size) {
     }
 
     // want to loop through array and see if there is a memory hole large enough
+
+    //Check if there is holes at the start of the array 
     unsigned long hole_size = 0;
-    if (check_base_addr()) {
+    if (!check_base_addr()) {
         int curr_hole = find_next_hole(-1);
         hole_size = (regions[curr_hole].start_address + regions[curr_hole].size) - (base_address + PageTable::PAGE_SIZE);
         if (hole_size >= _size) {
@@ -114,6 +116,7 @@ unsigned long VMPool::allocate(unsigned long _size) {
     }
 
     for (int i = 0; i < curr_size; i++) {
+        unsigned long hole_size = 0;
         int next_hole = find_next_hole(i);
         if (next_hole == -1) {
             hole_size = (base_address + size) - (regions[i].start_address + regions[i].size);
@@ -121,6 +124,7 @@ unsigned long VMPool::allocate(unsigned long _size) {
         else {
             hole_size = (regions[i].start_address + regions[i].size) - (regions[next_hole].start_address + regions[next_hole].size);
         }
+
         if (hole_size >= _size) {
             regions[curr_size].size = allocated_frames * PageTable::PAGE_SIZE;
             regions[curr_size].start_address = regions[i].start_address + regions[i].size;
@@ -128,9 +132,9 @@ unsigned long VMPool::allocate(unsigned long _size) {
             return regions[curr_size - 1].start_address;
         }
     }
-    return 0;
 }
- bool VMPool::check_base_addr() {
+
+bool VMPool::check_base_addr() {
     for (int i = 0; i < curr_size; i++) {
         if (regions[i].start_address == (base_address + PageTable::PAGE_SIZE)) {
             return true;
@@ -196,4 +200,3 @@ bool VMPool::is_legitimate(unsigned long _address) {
     }
     return false;
 }
-
