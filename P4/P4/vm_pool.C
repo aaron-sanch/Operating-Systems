@@ -80,7 +80,7 @@ VMPool::VMPool(unsigned long  _base_address,
 }
 
 unsigned long VMPool::allocate(unsigned long _size) {
-    if (size == 0) {
+    if (size == 0 || curr_size == regions_array_size) {
         // size of vmpool is 0 we cant allocate
         return 0;
     }
@@ -132,6 +132,7 @@ unsigned long VMPool::allocate(unsigned long _size) {
             return regions[curr_size - 1].start_address;
         }
     }
+    return 0;
 }
 
 bool VMPool::check_base_addr() {
@@ -169,20 +170,25 @@ void VMPool::release(unsigned long _start_address) {
     //      page_table->free_page(addr)
     // The page_table object file that we provide (named page_table_provided.o)
     // contains this method.
-
+    int val_for_release = -1;
     for (int i = 0; i < (curr_size); i++) {
         if (_start_address == regions[i].start_address) {
-            page_table->free_page(_start_address);
-            regions[i].start_address = 0;
-            regions[i].size = 0;
-            for (int j = i; j < curr_size; j++) {
-                regions[j].start_address = regions[j + 1].start_address;
-                regions[j].size = regions[j + 1].size;
-            }
-            curr_size--;
+            val_for_release = i;
             break;
         }
     }
+    if (val_for_release != -1) {
+        for (unsigned long i = 0; i <= (regions[val_for_release].size / PageTable::PAGE_SIZE); i++)
+            page_table->free_page(_start_address + PageTable::PAGE_SIZE * i);
+    }
+    regions[val_for_release].start_address = base_address + 1;
+    regions[val_for_release].size = 0;
+    for (unsigned long i = val_for_release; i < curr_size; i++) {
+        regions[i].start_address = regions[i + 1].start_address;
+        regions[i].size = regions[i + 1].size;
+    }
+    curr_size--;
+    page_table->load();
 }
 
 bool VMPool::is_legitimate(unsigned long _address) {
