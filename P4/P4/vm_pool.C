@@ -103,8 +103,16 @@ unsigned long VMPool::allocate(unsigned long _size) {
     // want to loop through array and see if there is a memory hole large enough
     unsigned long hole_size = 0;
     if (check_base_addr()) {
-        
+        int curr_hole = find_next_hole(-1);
+        hole_size = (regions[curr_hole].start_address + regions[curr_hole].size) - (base_address + PageTable::PAGE_SIZE);
+        if (hole_size >= _size) {
+            regions[curr_size].size = allocated_frames * PageTable::PAGE_SIZE;
+            regions[curr_size].start_address = base_address + PageTable::PAGE_SIZE;
+            curr_size++;
+            return regions[curr_size - 1].start_address;
+        }
     }
+
     for (int i = 0; i < curr_size; i++) {
         int next_hole = find_next_hole(i);
         if (next_hole == -1) {
@@ -120,6 +128,7 @@ unsigned long VMPool::allocate(unsigned long _size) {
             return regions[curr_size - 1].start_address;
         }
     }
+    return 0;
 }
  bool VMPool::check_base_addr() {
     for (int i = 0; i < curr_size; i++) {
@@ -163,8 +172,8 @@ void VMPool::release(unsigned long _start_address) {
             regions[i].start_address = 0;
             regions[i].size = 0;
             for (int j = i; j < curr_size; j++) {
-                regions[i].start_address = regions[i + 1].start_address;
-                regions[i].size = regions[i + 1].size;
+                regions[j].start_address = regions[j + 1].start_address;
+                regions[j].size = regions[j + 1].size;
             }
             curr_size--;
             break;
