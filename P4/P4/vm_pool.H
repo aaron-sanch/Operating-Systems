@@ -49,6 +49,8 @@ private:
    ContFramePool *frame_pool;
    PageTable *page_table;
    Region* regions;
+   const int regions_array_size;
+   unsigned long curr_size;
 public:
    VMPool(unsigned long  _base_address,
           unsigned long  _size,
@@ -77,6 +79,8 @@ public:
    /* Returns false if the address is not valid. An address is not valid
     * if it is not part of a region that is currently allocated. */
 
+   int find_next_hole(int curr);
+   bool check_base_addr();
  };
 
 #endif

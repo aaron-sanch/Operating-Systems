@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "vm_pool.H": "cpp",
-        "vm_pool.C": "cpp"
+        "vm_pool.C": "cpp",
+        "kernel.C": "cpp"
     }
 }

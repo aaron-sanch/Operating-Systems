@@ -1,11 +1,9 @@
 /*
-    File: kernel.C
+    File: kernel-rubric.C
 
-    Author: R. Bettati
+    Author: R. Bettati, Dilma Da Silva
             Department of Computer Science
             Texas A&M University
-    Date  : 2017/06/20
-
 
     This file has the main entry point to the operating system.
 
@@ -66,6 +64,8 @@ void TestFailed();
 
 void GeneratePageTableMemoryReferences(unsigned long start_address, int n_references);
 void GenerateVMPoolMemoryReferences(VMPool *pool, int size1, int size2);
+
+void output_console_file(const char* _string);
 
 /*--------------------------------------------------------------------------*/
 /* MEMORY ALLOCATION */
@@ -229,10 +229,15 @@ int main() {
 
     /* WE TEST JUST THE VM POOLS */
 
+
+
+    output_console_file("GRADING - Constructor ran without breaking the system.\n");
+    output_console_file("GRADING - It has at least 10 points for compiling and booting.\n");
+
+
     /* -- CREATE THE VM POOLS. */
 
     VMPool small_pool(512 MB, 8 KB, &process_mem_pool, &pt1);
-
     /* -- INITIAL TESTING, a few simple calls */
     current_pool = &small_pool;
     EXPECT_FALSE(small_pool.is_legitimate(300 MB));
@@ -249,6 +254,8 @@ int main() {
     EXPECT_TRUE(array1 != 0);
 
     Console::puts("Success in simple tests with small_pool.\n");
+    output_console_file("GRADING - It succeded with small_pool tests.\n");
+    output_console_file("GRADING - It has at least 25 points out of 50.\n");
 
     VMPool code_pool(512 MB, 256 MB, &process_mem_pool, &pt1);
     VMPool heap_pool(1 GB, 256 MB, &process_mem_pool, &pt1);
@@ -269,6 +276,87 @@ int main() {
     GenerateVMPoolMemoryReferences(&heap_pool, 50, 100);
 
     TestPassed();
+
+    output_console_file("GRADING - small_pool and memory reference tests.\n");
+    output_console_file("GRADING - Submission has at least 35 points out of 50.\n");
+    
+    const unsigned long base = 800 MB;
+    unsigned long space_available = 64 KB;
+    VMPool v(base, 64 KB, &process_mem_pool, &pt1);
+    unsigned long addr1 = v.allocate(32 KB);
+    space_available -= 32 KB;
+    unsigned long space_used_by_region_list = addr1 - base;
+    space_available -= space_used_by_region_list;
+    if (space_available < 16 KB) {
+        /* implementation is wasting memory; it used more than 18 KB to
+        ** store its array? 
+        */
+        output_console_file("GRADING space_available is too small - It did not go beyond initial tests.\n");
+        output_console_file("GRADING - Grade is 35 out of 50\n");
+    } else {
+        unsigned long addr2 = v.allocate(12 KB);
+        space_available -= 12 KB;
+        unsigned long addr3 = v.allocate(space_available);
+        if (addr2 == 0 || addr3 == 0) {
+            output_console_file("GRADING allocation failed - It did not go beyond initial tests.\n");
+            output_console_file("GRADING - Grade is 35 out of 50\n"); 
+        } else {
+            /* now we will release memory and try to allocate it
+            ** again. Implementations that always allocate at the
+            ** end of their allocations (not noticing 'holes' created
+            ** by releases) are likely to fail.
+            */
+            v.release(addr2);
+            unsigned long addr4 = v.allocate(10 KB);
+            if ( (addr4 >= (addr1 + 32 KB) )
+                      && addr4 < addr3) {
+                /* at least it found the gap created by the relase of addr2
+                */
+                output_console_file("GRADING - It reused released memory.\n");
+                output_console_file("GRADING - Grade is  at least 45 out of 50\n");
+
+                /* This catches implementations that allow their list of
+                ** allocated regions to go beyond the space they reserved for
+                ** it */
+                VMPool v2(2 GB, 512 MB, &process_mem_pool, &pt1);
+                unsigned long address = v2.allocate(4 KB);
+                unsigned long internal_space = address - (2 GB);
+                unsigned long how_many_to_create;
+                if (internal_space == 0) {
+                    // implementation is likely to be using data member for array, 
+                    // so limited in the number of regions.
+                    how_many_to_create = 100;
+                } else {
+                    // most students will have a region represented through a structure
+                    // with two numbers
+                    how_many_to_create = internal_space/8 + 20;
+                }
+                debug_out_E9_msg_value("how_many_to_create is ", how_many_to_create);
+                for (unsigned long i = 0; i < how_many_to_create && address != 0; i++) {
+                    address = v2.allocate(4 KB); /* there is space for the 
+                                                 ** request, but eventually
+                                                 ** not enough space in the array
+                                                 ** of lists used in the implementation */
+                }
+                if (address == 0) {
+                    // implementation has bounded array of regions
+                    output_console_file("GRADING - Grade is  50 out of 50\n");
+                } else {
+                    output_console_file("GRADING - It went behyond space for array\n");
+                    output_console_file("GRADING - Grade is 45 out of 50\n");                    
+                }
+
+            } else {
+                debug_out_E9_msg_value("addr1", addr1);
+                debug_out_E9_msg_value("addr3", addr3);
+                debug_out_E9_msg_value("addr4", addr4);
+                output_console_file("GRADING add4 out of expected range - It did not go beyond initial tests.\n");
+                output_console_file("GRADING - Grade is 35 out of 50\n"); 
+            } 
+        }
+    }
+    Console::puts("YOU CAN SAFELY TURN OFF THE MACHINE NOW.\n");
+    for(;;);
 }
 
 void GeneratePageTableMemoryReferences(unsigned long start_address, int n_references) {
@@ -314,6 +402,11 @@ void TestFailed() {
 
 void TestPassed() {
    Console::puts("Test Passed! Congratulations!\n");
-   Console::puts("YOU CAN SAFELY TURN OFF THE MACHINE NOW.\n");
-   for(;;);
+   //Console::puts("YOU CAN SAFELY TURN OFF THE MACHINE NOW.\n");
+   //for(;;);
+}
+
+void output_console_file(const char* _string) {
+    Console::puts(_string);
+    debug_out_E9(_string);
 }
