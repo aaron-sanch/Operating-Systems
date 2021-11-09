@@ -178,11 +178,12 @@ void VMPool::release(unsigned long _start_address) {
         }
     }
     if (val_for_release != -1) {
-        for (unsigned long i = 0; i <= (regions[val_for_release].size / PageTable::PAGE_SIZE); i++)
-            page_table->free_page(_start_address + PageTable::PAGE_SIZE * i);
+        for (unsigned long i = 0; i <= (regions[val_for_release].size / PageTable::PAGE_SIZE); i++) {
+            page_table->free_page(_start_address + PageTable::PAGE_SIZE * (i + 1));
+        }
     }
-    regions[val_for_release].start_address = base_address + 1;
-    regions[val_for_release].size = 0;
+    //regions[val_for_release].start_address = base_address + 1;
+    //regions[val_for_release].size = 0;
     for (unsigned long i = val_for_release; i < curr_size; i++) {
         regions[i].start_address = regions[i + 1].start_address;
         regions[i].size = regions[i + 1].size;
