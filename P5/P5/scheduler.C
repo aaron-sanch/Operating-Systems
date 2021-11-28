@@ -57,11 +57,14 @@ void Scheduler::yield() {
     Thread::dispatch_to(popped_thread);
     return;
   }
-  Console::puts("Empty queue, cannot yield.");
+  Console::puts("Empty queue, cannot yield.\n");
 }
 
 void Scheduler::resume(Thread * _thread) {
   queue.push(_thread); // queue push adds to ready queue
+  Console::puts("Size: ");
+  Console::puti(queue.size());
+  Console::puts("\n");
 }
 
 void Scheduler::add(Thread * _thread) {
@@ -69,5 +72,5 @@ void Scheduler::add(Thread * _thread) {
 }
 
 void Scheduler::terminate(Thread * _thread) {
-  
+  assert(false);
 }

@@ -54,6 +54,7 @@ public:
          this->head->curr_thread = _thread;
          this->head->next = NULL;
          this->tail = this->head;
+         q_size += 1;
          return;
       }
       Node* curr_node = new Node;
@@ -66,7 +67,7 @@ public:
 
    Thread* pop() {
       if (q_size <= 0) {
-         Console::puts("Trying to pop from empty queue.");
+         Console::puts("Trying to pop from empty queue.\n");
          return NULL;
       }
       Thread* temp = this->head->curr_thread;
