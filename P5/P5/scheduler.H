@@ -77,6 +77,19 @@ public:
       return temp;
    }
 
+   void destroy_thread(Thread *_thread) {
+      Node *finder = this->head;
+      while (finder != NULL) {
+         if (finder->curr_thread == _thread) {
+            Thread* to_destroy = finder->curr_thread;
+            finder->curr_thread = finder->next->curr_thread;
+            finder->next = finder->next->next;
+            delete to_destroy;
+            return;
+         }
+         finder = finder->next;
+      }
+   }
 };
 
 /*--------------------------------------------------------------------------*/

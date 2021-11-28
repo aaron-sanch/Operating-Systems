@@ -72,5 +72,11 @@ void Scheduler::add(Thread * _thread) {
 }
 
 void Scheduler::terminate(Thread * _thread) {
-  assert(false);
+  if (_thread == Thread::CurrentThread()) {
+    // might need to yield here
+    delete _thread;
+    return;
+  }
+
+  queue.destroy_thread(_thread);
 }
