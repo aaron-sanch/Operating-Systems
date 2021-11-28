@@ -34,6 +34,7 @@
 #include "frame_pool.H"
 
 #include "thread.H"
+#include "scheduler.H"
 
 #include "threads_low.H"
 
@@ -44,7 +45,7 @@
 Thread * current_thread = 0;
 /* Pointer to the currently running thread. This is used by the scheduler,
    for example. */
-
+extern Scheduler * SYSTEM_SCHEDULER;
 /* -------------------------------------------------------------------------*/
 /* LOCAL DATA PRIVATE TO THREAD AND DISPATCHER CODE */
 /* -------------------------------------------------------------------------*/
@@ -72,8 +73,8 @@ static void thread_shutdown() {
        It terminates the thread by releasing memory and any other resources held by the thread. 
        This is a bit complicated because the thread termination interacts with the scheduler.
      */
-
-    assert(false);
+    SYSTEM_SCHEDULER->terminate(Thread::CurrentThread());
+    //assert(false);
     /* Let's not worry about it for now. 
        This means that we should have non-terminating thread functions. 
     */

@@ -85,6 +85,7 @@ public:
             finder->curr_thread = finder->next->curr_thread;
             finder->next = finder->next->next;
             delete to_destroy;
+            q_size -= 1;
             return;
          }
          finder = finder->next;
