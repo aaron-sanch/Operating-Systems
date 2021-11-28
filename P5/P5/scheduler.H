@@ -12,7 +12,7 @@
 /*--------------------------------------------------------------------------*/
 /* DEFINES */
 /*--------------------------------------------------------------------------*/
-
+#define NULL 0
 /* -- (none) -- */
 
 /*--------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 /*--------------------------------------------------------------------------*/
 
 #include "thread.H"
+#include "console.H"
 
 struct Node { // Creating a node class to hold the threads on the queue
 
@@ -35,25 +36,29 @@ class Queue { // Creating the queue
 
 public:
    Queue() {
-      this->head = nullptr;
-      this->tail = nullptr;
+      this->head = NULL;
+      this->tail = NULL;
       this->head->next = this->tail;
-      this->tail->next = nullptr;
+      this->tail->next = NULL;
 
       this->q_size = 0;
+   }
+
+   long size() {
+      return q_size;
    }
 
    void push(Thread *_thread) {
       if (this->q_size == 0) {
          this->head = new Node;
          this->head->curr_thread = _thread;
-         this->head->next = nullptr;
+         this->head->next = NULL;
          this->tail = this->head;
          return;
       }
       Node* curr_node = new Node;
       curr_node->curr_thread = _thread;
-      curr_node->next = nullptr;
+      curr_node->next = NULL;
       this->tail->next = curr_node;
       this->tail = curr_node;
       q_size += 1;
@@ -62,7 +67,7 @@ public:
    Thread* pop() {
       if (q_size <= 0) {
          Console::puts("Trying to pop from empty queue.");
-         return nullptr;
+         return NULL;
       }
       Thread* temp = this->head->curr_thread;
       this->head = this->head->next;
@@ -110,7 +115,8 @@ class Scheduler {
 
   /* The scheduler may need private members... */
   // Creating a queue to use here
-  
+  Queue queue;
+
 public:
 
    Scheduler();
