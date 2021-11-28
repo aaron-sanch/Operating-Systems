@@ -142,7 +142,7 @@ void fun1() {
     Console::puts("FUN 1 INVOKED!\n");
 
 #ifdef _TERMINATING_FUNCTIONS_
-    for(int j = 0; j < 10; j++) 
+    for(int j = 0; j < 2; j++) 
 #else
     for(int j = 0; ; j++) // infinite loop
 #endif
@@ -162,7 +162,7 @@ void fun2() {
     Console::puts("FUN 2 INVOKED!\n");
 
 #ifdef _TERMINATING_FUNCTIONS_
-    for(int j = 0; j < 10; j++) 
+    for(int j = 0; j < 2; j++) 
 #else
     for(int j = 0;; j++) 
 #endif  

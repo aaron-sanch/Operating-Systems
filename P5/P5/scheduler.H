@@ -84,7 +84,9 @@ public:
             Thread* to_destroy = finder->curr_thread;
             finder->curr_thread = finder->next->curr_thread;
             finder->next = finder->next->next;
+	    Console::puts("Gets to destroy in destroy.\n");
             delete to_destroy;
+	    Console::puts("Destroys in destroy thread.\n");
             q_size -= 1;
             return;
          }
