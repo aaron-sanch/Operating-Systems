@@ -80,9 +80,9 @@ VMPool::VMPool(unsigned long  _base_address,
 }
 
 unsigned long VMPool::allocate(unsigned long _size) {
-    Console::puts("Current length before allocation: ");
-    Console::putui(curr_size);
-    Console::puts("\n");
+    //Console::puts("Current length before allocation: ");
+    //Console::putui(curr_size);
+    //Console::puts("\n");
 
     if (size == 0 || curr_size == regions_array_size) {
         // size of vmpool is 0 we cant allocate
@@ -100,7 +100,7 @@ unsigned long VMPool::allocate(unsigned long _size) {
         regions[0].start_address = base_address + PageTable::PAGE_SIZE;
         curr_size++;
         // Console::puts((char*)(base_address + PageTable::PAGE_SIZE));
-        Console::puts("Going through allocation for first address.\n");
+        //Console::puts("Going through allocation for first address.\n");
         return regions[0].start_address;
     }
 
@@ -115,7 +115,7 @@ unsigned long VMPool::allocate(unsigned long _size) {
             regions[curr_size].size = allocated_frames * PageTable::PAGE_SIZE;
             regions[curr_size].start_address = base_address + PageTable::PAGE_SIZE;
             curr_size++;
-            Console::puts("Going through allocation for hole before first address.\n");
+            //Console::puts("Going through allocation for hole before first address.\n");
             return regions[curr_size - 1].start_address;
         }
     }
@@ -125,26 +125,26 @@ unsigned long VMPool::allocate(unsigned long _size) {
         int next_hole = find_next_hole(i);
         if (next_hole == -1 && regions[i].start_address >= find_last_val()) {
             hole_size = (base_address + size) - (regions[i].start_address + regions[i].size);
-            Console::puts("Going through allocation for hole at the end.\n");
+            //Console::puts("Going through allocation for hole at the end.\n");
         }
         else {
             hole_size = (regions[i].start_address + regions[i].size) - (regions[next_hole].start_address + regions[next_hole].size);
             if ((regions[i].start_address + regions[i].size) == regions[next_hole].start_address) {
                 hole_size = 0;
             }
-            Console::puts("Hole Size: ");
-            Console::putui(hole_size);
-            Console::puts("\n");
-            Console::puts("Regions[0]: ");
-            Console::putui(regions[0].start_address);
-            Console::puts("\n");
-            Console::puts("Regions[0] + size: ");
-            Console::putui(regions[0].start_address + regions[0].size);
-            Console::puts("\n");
-            Console::puts("Regions[1]: ");
-            Console::putui(regions[1].start_address);
-            Console::puts("\n");
-            Console::puts("Going through allocation for regular hole.\n");
+            //Console::puts("Hole Size: ");
+            //Console::putui(hole_size);
+            //Console::puts("\n");
+            //Console::puts("Regions[0]: ");
+            //Console::putui(regions[0].start_address);
+            //Console::puts("\n");
+            //Console::puts("Regions[0] + size: ");
+            //Console::putui(regions[0].start_address + regions[0].size);
+            //Console::puts("\n");
+            //Console::puts("Regions[1]: ");
+            //Console::putui(regions[1].start_address);
+            //Console::puts("\n");
+            //Console::puts("Going through allocation for regular hole.\n");
         }
 
         if (hole_size >= _size) {
@@ -222,9 +222,9 @@ void VMPool::release(unsigned long _start_address) {
     }
     curr_size--;
     page_table->load();
-    Console::puts("Current length: ");
-    Console::putui(curr_size);
-    Console::puts("\n");
+    //Console::puts("Current length: ");
+    //Console::putui(curr_size);
+    //Console::puts("\n");
 }
 
 bool VMPool::is_legitimate(unsigned long _address) {
