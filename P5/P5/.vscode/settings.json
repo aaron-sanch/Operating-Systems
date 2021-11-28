@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "scheduler.C": "cpp"
+        "scheduler.C": "cpp",
+        "kernel.C": "cpp"
     }
 }
