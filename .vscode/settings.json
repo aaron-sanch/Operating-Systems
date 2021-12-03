@@ -45,6 +45,8 @@
         "cont_frame_pool.C": "cpp",
         "page_table.H": "cpp",
         "page_table.C": "cpp",
-        "machine_low.H": "cpp"
+        "machine_low.H": "cpp",
+        "thread.C": "cpp",
+        "scheduler.C": "cpp"
     }
 }

@@ -12,7 +12,7 @@
 /*--------------------------------------------------------------------------*/
 /* DEFINES */
 /*--------------------------------------------------------------------------*/
-
+#define NULL 0
 /* -- (none) -- */
 
 /*--------------------------------------------------------------------------*/
@@ -20,6 +20,80 @@
 /*--------------------------------------------------------------------------*/
 
 #include "thread.H"
+#include "console.H"
+
+struct Node { // Creating a node class to hold the threads on the queue
+
+   Node* next;
+   Thread* curr_thread;
+   
+};
+
+class Queue { // Creating the queue
+   Node* head;
+   Node* tail;
+   long q_size;
+
+public:
+   Queue() {
+      this->head = NULL;
+      this->tail = NULL;
+      this->head->next = this->tail;
+      this->tail->next = NULL;
+
+      this->q_size = 0;
+   }
+
+   long size() {
+      return q_size;
+   }
+
+   void push(Thread *_thread) {
+      if (this->q_size == 0) {
+         this->head = new Node;
+         this->head->curr_thread = _thread;
+         this->head->next = NULL;
+         this->tail = this->head;
+         q_size += 1;
+         return;
+      }
+      Node* curr_node = new Node;
+      curr_node->curr_thread = _thread;
+      curr_node->next = NULL;
+      this->tail->next = curr_node;
+      this->tail = curr_node;
+      q_size += 1;
+   }
+
+   Thread* pop() {
+      if (q_size <= 0) {
+         Console::puts("Trying to pop from empty queue.\n");
+         return NULL;
+      }
+      Thread* temp = this->head->curr_thread;
+      this->head = this->head->next;
+      q_size -= 1;
+
+      return temp;
+   }
+
+   void destroy_thread(Thread *_thread) {
+      Node *finder = this->head;
+      while (finder != NULL) {
+         if (finder->curr_thread == _thread) {
+            Thread* to_destroy = finder->curr_thread;
+            finder->curr_thread = finder->next->curr_thread;
+            finder->next = finder->next->next;
+	    Console::puts("Gets to destroy in destroy.\n");
+            delete to_destroy;
+	    Console::puts("Destroys in destroy thread.\n");
+            q_size -= 1;
+            return;
+         }
+         finder = finder->next;
+      }
+   }
+};
 
 /*--------------------------------------------------------------------------*/
 /* !!! IMPLEMENTATION HINT !!! */
@@ -57,7 +131,9 @@
 class Scheduler {
 
   /* The scheduler may need private members... */
-  
+  // Creating a queue to use here
+  Queue queue;
+
 public:
 
    Scheduler();
