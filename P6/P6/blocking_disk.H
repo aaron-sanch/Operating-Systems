@@ -34,6 +34,7 @@
 /*--------------------------------------------------------------------------*/
 
 class BlockingDisk : public SimpleDisk {
+   DISK_ID      disk_id;            /* This disk is either MASTER or SLAVE */
 public:
    BlockingDisk(DISK_ID _disk_id, unsigned int _size); 
    /* Creates a BlockingDisk device with the given size connected to the 
@@ -51,6 +52,8 @@ public:
    virtual void write(unsigned long _block_no, unsigned char * _buf);
    /* Writes 512 Bytes from the buffer to the given block on the disk. */
 
+   void blocking_wait();
+   void issue_operation(DISK_OPERATION _op, unsigned long _block_no);
 };
 
 #endif

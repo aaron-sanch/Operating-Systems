@@ -47,6 +47,8 @@
         "page_table.C": "cpp",
         "machine_low.H": "cpp",
         "thread.C": "cpp",
-        "scheduler.C": "cpp"
+        "scheduler.C": "cpp",
+        "blocking_disk.C": "cpp",
+        "simple_disk.C": "cpp"
     }
 }
