@@ -45,6 +45,7 @@ void BlockingDisk::read(unsigned long _block_no, unsigned char * _buf) {
   // -- REPLACE THIS with code that won't do busy waiting
   issue_operation(READ, _block_no);
 
+  // use the same read function from Simple Disk, just change wait function, so we can use non simple wait
   blocking_wait();
 
   /* read data from port */
@@ -62,7 +63,7 @@ void BlockingDisk::read(unsigned long _block_no, unsigned char * _buf) {
 void BlockingDisk::write(unsigned long _block_no, unsigned char * _buf) {
   Console::puts("You must implement BlockingDisk::write\n");
     issue_operation(WRITE, _block_no);
-
+  // use the same write function from Simple Disk, just change wait function, so we can use non simple wait
   blocking_wait();
 
   /* write data to port */
@@ -77,7 +78,7 @@ void BlockingDisk::write(unsigned long _block_no, unsigned char * _buf) {
 void BlockingDisk::blocking_wait() {
   Console::puts("We wait.\n");
 
-  // If we are not 
+  // If we are not ready we we add to the disk queue, then yield the system queue
   if(!is_ready()) {
     scheduler->resume(Thread::CurrentThread());
     SYSTEM_SCHEDULER->yield();
@@ -85,7 +86,7 @@ void BlockingDisk::blocking_wait() {
 }
 
 void BlockingDisk::issue_operation(DISK_OPERATION _op, unsigned long _block_no) {
-
+  // copied over the same issue operation function from SimpleDisk
   Machine::outportb(0x1F1, 0x00); /* send NULL to port 0x1F1         */
   Machine::outportb(0x1F2, 0x01); /* send sector count to port 0X1F2 */
   Machine::outportb(0x1F3, (unsigned char)_block_no);
