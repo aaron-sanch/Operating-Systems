@@ -27,10 +27,12 @@
 /*--------------------------------------------------------------------------*/
 /* CONSTRUCTOR */
 /*--------------------------------------------------------------------------*/
+extern Scheduler* SYSTEM_SCHEDULER;
 
 BlockingDisk::BlockingDisk(DISK_ID _disk_id, unsigned int _size) 
   : SimpleDisk(_disk_id, _size) {
     disk_id = _disk_id;
+    this->scheduler = new Scheduler();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -73,8 +75,13 @@ void BlockingDisk::write(unsigned long _block_no, unsigned char * _buf) {
 }
 
 void BlockingDisk::blocking_wait() {
-  Console::puts("We wait.");
+  Console::puts("We wait.\n");
 
+  // If we are not 
+  if(!is_ready()) {
+    scheduler->resume(Thread::CurrentThread());
+    SYSTEM_SCHEDULER->yield();
+  }
 }
 
 void BlockingDisk::issue_operation(DISK_OPERATION _op, unsigned long _block_no) {

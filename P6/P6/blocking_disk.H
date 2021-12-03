@@ -22,6 +22,7 @@
 /*--------------------------------------------------------------------------*/
 
 #include "simple_disk.H"
+#include "scheduler.H"
 
 /*--------------------------------------------------------------------------*/
 /* DATA STRUCTURES */ 
@@ -35,6 +36,7 @@
 
 class BlockingDisk : public SimpleDisk {
    DISK_ID      disk_id;            /* This disk is either MASTER or SLAVE */
+   Scheduler* scheduler;
 public:
    BlockingDisk(DISK_ID _disk_id, unsigned int _size); 
    /* Creates a BlockingDisk device with the given size connected to the 
